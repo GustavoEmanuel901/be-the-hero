@@ -1,47 +1,35 @@
 import React, {useState, useEffect} from 'react'
 import { Link, useHistory } from 'react-router-dom'
-import { FiPower, FiTrash2 } from 'react-icons/fi'
+import { FiPower} from 'react-icons/fi'
 import { GiCancel } from 'react-icons/gi'
 import { MdSystemUpdate } from 'react-icons/md'
 
-import './styles.css'
+import '../Profile/styles.css'
 import logoImg from '../../assets/logo.svg'
 import api from '../../services/api'
 
 export default function Profile(){
     const [incidents, setIncidents] = useState([])
-
+    const [pesquisa, setPesquisa] = useState('');
+    
     const history = useHistory()
-    const ongName = localStorage.getItem('ongName')
-    const ongId = localStorage.getItem('ongId')
+    const Nome = localStorage.getItem('Nome')
+    //const ongId = localStorage.getItem('ongId')
 
     
+    
+    useEffect(()=>{
+        if(incidents === "" || pesquisa === ""){
+            api.get(`incidents`).then(response =>{
+                setIncidents(response.data)
+            })
+        }
 
-    useEffect(() => {
-        api.get('profile', {
-            headers:{
-                Authorization: ongId,
-            }
-        }).then(response =>{
-            setIncidents(response.data) 
-            //console.log(response.data) 
+        api.get(`buscaCasos/${pesquisa}`).then(response =>{
+            setIncidents(response.data)
         })
-    }, [ongId])
-
-    
-
-    async function handleDeleteIncident(id){
-      try {
-         await api.delete(`incidents/${id}`,{ headers: {
-             Authorization: ongId,
-         }
-         });
-         setIncidents(incidents.filter(incident => incident.id !== id)) 
-      } catch (err) {
-          alert('Erro ao deletar caso, tente novamente')
-      }  
-    }
-
+    })
+   
     function handleLogout(){
         localStorage.clear()
 
@@ -49,44 +37,46 @@ export default function Profile(){
     }
 
     function ir(){
-        history.push('/deleteOng')
+        history.push('/deleteUse')
     }
 
     function irUpdate(){
-        history.push('/atualizarOng')
+        history.push('/atualizarUse')
     }
+
 
     return (
         <div className="profile-container">
             <header>
                 <img src={logoImg} alt="Be the Hero"/>
-                <span>Bem vinda, {ongName}</span>
+                <span>Bem vindo(a), {Nome}</span>
 
-                <Link className="button" to='/ongsforOng'>
-                    Veja Ongs Cadastradas
+                <Link className="button" to='/ongs'>
+                    Ver Ongs Cadastradas
                 </Link>
-
-                <Link className="button" to='/incidents/new'>
-                    Cadastrar novo caso
-                </Link>
-
                 <div className="buttons">
-
                     <button type='button' onClick={irUpdate}>
                         <MdSystemUpdate size={18} color='#e02041'/>
                     </button>
 
                     <button type='button' onClick={handleLogout}>
-                        <FiPower size={18} color='#e02041'/>
+                        <FiPower size={22} color='#e02041'/>
                     </button>
 
                     <button type='button' onClick={ir} >
-                        <GiCancel size={18} color="#e02041"/>
+                        <GiCancel size={22} color="#e02041"/>
                     </button>
-                    
                 </div>
-               
+                
             </header>
+
+            <form>
+                <h1 className="textSearch">Pesquise aqui</h1>
+                <input className="pesquisa"
+                placeholder="Digite Aqui (Use Letras Maiúsculas e Minúsculas)"
+                onChange={e => setPesquisa(e.target.value)}/>
+            </form>
+
 
             <h1>Casos Cadastrados</h1>
             <ul>
@@ -104,13 +94,22 @@ export default function Profile(){
                     <strong>VALOR:</strong>
                      <p>{Intl.NumberFormat('pt-br', {style: 'currency', currency: 'BRL'}).format(incident.value)}</p>
 
-                    <button type='button' onClick={() => handleDeleteIncident(incident.id)}>
-                        <FiTrash2 size={20} color="#a8a8b3"/>
-                    </button>
+                     <strong>NOME DA ONG:</strong>
+                     <p>{incident.name}</p>
+
+                     <strong>ENTRE EM CONTATO POR:</strong>
+                     <div className="contatos">
+                        <p><b>Whatsapp:</b> {incident.whatsapp}</p>
+                        <p><b>E-mail:</b> {incident.email}</p>
+                     </div>
                 </li>
                     )
                 ))}
             </ul>
+
+           
+
         </div>
+           
     )
 }

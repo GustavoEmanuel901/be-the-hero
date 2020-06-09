@@ -13,7 +13,7 @@ module.exports = {
             res.header("X-Total-Count", x.count)
         }
 
-        const incidents = await connection.query(`select * from incidents inner join ongs on (ongs.id = incidents.ong_id) limit 5 offset ${(page - 1) * 5}`)
+        const incidents = await connection.query(`select i.id, i.title, i.description, i.value, o.name, o.email, o.whatsapp from incidents as i inner join ongs as o on (o.id = i.ong_id) limit 6 offset ${(page - 1) * 5}`)
 
         return res.json(incidents.rows)
     },
@@ -23,7 +23,7 @@ module.exports = {
         const ong_id = req.headers.authorization
         const id = generateUniqueId()
 
-        const values = [id,title,description,value, ong_id]
+        const values = [id, title, description, value, ong_id]
 
         const query = 'insert into incidents ("id", "title", "description", "value", "ong_id") values ($1,$2,$3,$4,$5)'
 
@@ -37,18 +37,13 @@ module.exports = {
     async delete(req, res){
            const { id } = req.params
         
-            const ong_id = req.headers.authorization
-
-        //console.log(ong_id, id)
-        
+           const ong_id = req.headers.authorization
 
            const incident = await (await connection.query(`select ong_id from incidents where id='${id}'`)).rows
 
-        //console.log(incident)
-
            for (let x of incident){
                if(x.ong_id != ong_id){
-                   return res.status(401).json({error: 'Operation not permitted' })
+                   return res.status(401).json({error: 'Operation not permited'})
                }
            }
 
@@ -56,5 +51,27 @@ module.exports = {
 
            return res.status(204).send()
 
+    },
+
+    async update(req, res ){
+        const { id } = req.params
+        const {title, description, value } = req.body;
+        const ong_id = req.headers.authorization
+
+        const incident = await (await connection.query(`select ong_id from incidents where id='${id}'`)).rows
+
+        for (let x of incident){
+            if(x.ong_id !== ong_id){
+                return res.status(401).json({error: 'Operation not permited'})
+            }
+        }
+
+        const values = [title, description, value]
+
+        const query = `update incidents set title = $1, description = $2, value = $3  where id='${id}'`
+
+        await connection.query(query, values)
+
+        return res.status(200).json({Success: 'Atualizado com sucesso'})
     }
 }

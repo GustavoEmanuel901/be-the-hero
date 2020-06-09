@@ -1,0 +1,59 @@
+@media (max-width: 780px) {
+    .container , .logon-container {
+        width: 90%;
+        max-width: 790px;
+        height: 80vh;
+    }
+
+    .logon-container .form img {
+        margin-top: 30px;
+    }
+
+    img#people {
+        height: 80vh;
+    }
+
+    
+}
+
+/*Mobile*/
+@media (max-width: 570px){
+
+
+    .container, .logon-container, .register-container  {
+        width: 90%;
+        max-width: 425px;
+        display: grid;
+    }
+
+    .container .inicial, .logon-container .form {
+        grid-template-columns: 1fr;
+        margin: 20px 20px;
+    }
+
+    .logon-container img, .logon-container .back-link {
+        margin-left: auto;
+    }
+
+    .container img#people {
+        height: 270px;
+        position: absolute;
+        bottom: -150px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .logon-container img#people {
+        height: 0;
+        width: 0;
+    }
+
+
+    /*tela Cadastro*/
+   
+
+    .profile-container ul {
+        grid-template-columns: 1fr;
+    }
+
+}
